@@ -11,10 +11,10 @@ public class BookAuthor
     public int BookId { get; set; }
 
     [ForeignKey("BookId")]
-    public required Book Book { get; set; }
+    public Book Book { get; set; } = default!;
 
     public int AuthorId { get; set; }
 
     [ForeignKey("AuthorId")]
-    public required Author Author { get; set; }
+    public Author Author { get; set; } = default!;
 }

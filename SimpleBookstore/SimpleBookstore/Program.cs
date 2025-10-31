@@ -1,5 +1,9 @@
 using SimpleBookstore.Domain;
 using Microsoft.EntityFrameworkCore;
+using SimpleBookstore.Domain.Interfaces.Repositories;
+using SimpleBookstore.Domain.Repositories;
+using SimpleBookstore.Domain.Interfaces.Services;
+using SimpleBookstore.Domain.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +16,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<SimpleBookstoreDbContext>(option =>
     option.UseNpgsql(builder.Configuration.GetConnectionString("SimpleBookstoreDbConnection")));
+
+builder.Services
+    .AddScoped<IBookRepository, BookRepository>()
+    .AddScoped<IBookService, BookService>();
 
 var app = builder.Build();
 
