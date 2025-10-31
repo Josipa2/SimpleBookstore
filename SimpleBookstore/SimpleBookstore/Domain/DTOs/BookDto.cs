@@ -6,7 +6,9 @@ public record BookDto
 
     public required string Title { get; set; }
 
-    public IEnumerable<string> Authors { get; set; }
+    public required double AverageRating { get; set; }
 
-    public IEnumerable<string> Genres { get; set; }
+    public IEnumerable<string> Authors { get; set; } = default!;
+
+    public IEnumerable<string> Genres { get; set; } = default!;
 }

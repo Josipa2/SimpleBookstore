@@ -19,7 +19,9 @@ builder.Services.AddDbContext<SimpleBookstoreDbContext>(option =>
 
 builder.Services
     .AddScoped<IBookRepository, BookRepository>()
-    .AddScoped<IBookService, BookService>();
+    .AddScoped<IBookService, BookService>()
+    .AddScoped<IReviewRepository, ReviewRepository>()
+    .AddScoped<IReviewService, ReviewService>();
 
 var app = builder.Build();
 

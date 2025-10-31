@@ -18,4 +18,6 @@ public class Book
     public ICollection<BookGenre> BookGenres { get; init; } = [];
 
     public ICollection<BookAuthor> BookAuthors { get; init; } = [];
+
+    public ICollection<Review> Reviews { get; init; } = [];
 }
