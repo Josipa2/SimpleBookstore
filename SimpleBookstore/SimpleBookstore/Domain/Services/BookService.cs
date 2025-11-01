@@ -17,6 +17,11 @@ public class BookService(IBookRepository bookRepository) : IBookService
         return await bookRepository.GetBooksAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<BookDto>> GetTop10ByAverageRatingAsync(CancellationToken cancellationToken = default)
+    {
+        return await bookRepository.GetTop10ByAverageRatingAsync(cancellationToken);
+    }
+
     public async Task<int> Create(CreateBookDto createBookDto, CancellationToken cancellationToken = default)
     {
         return await bookRepository.Create(createBookDto, cancellationToken);

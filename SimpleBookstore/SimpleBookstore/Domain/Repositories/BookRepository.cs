@@ -8,14 +8,11 @@ namespace SimpleBookstore.Domain.Repositories;
 public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepository
 {
 
-    public async Task<BookDto?> GetBookByIdAsync(int id, CancellationToken cancellationToken = default)
-    {
-        var query = dbContext
+    public async Task<BookDto?> GetBookByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        await dbContext
             .Books
-            .Include(x => x.BookGenres)
-            .ThenInclude(x => x.Genre)
-            .Include(x => x.BookAuthors)
-            .ThenInclude(x => x.Author)
+            .Include(x => x.BookGenres).ThenInclude(x => x.Genre)
+            .Include(x => x.BookAuthors).ThenInclude(x => x.Author)
             .Include(x => x.Reviews)
             .Where(x => x.Id == id)
             .Select(b => new BookDto
@@ -26,19 +23,14 @@ public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepositor
                 Genres = b.BookGenres.Select(bg => bg.Genre.Name),
                 AverageRating = b.Reviews.Any() ? Math.Round(b.Reviews.Average(r => r.Rating), 2) : 0
             })
-            .AsNoTracking();
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
 
-        return await query.FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<IEnumerable<BookDto>> GetBooksAsync(CancellationToken cancellationToken = default)
-    {
-        var query = dbContext
+    public async Task<IEnumerable<BookDto>> GetBooksAsync(CancellationToken cancellationToken = default) => 
+            await dbContext
             .Books
-            .Include(x => x.BookGenres)
-            .ThenInclude(x => x.Genre)
-            .Include(x => x.BookAuthors)
-            .ThenInclude(x => x.Author)
+            .Include(x => x.BookGenres).ThenInclude(x => x.Genre)
+            .Include(x => x.BookAuthors).ThenInclude(x => x.Author)
             .Include(x => x.Reviews)
             .Select(b => new BookDto
             {
@@ -48,9 +40,56 @@ public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepositor
                 Genres = b.BookGenres.Select(bg => bg.Genre.Name),
                 AverageRating = b.Reviews.Any() ? Math.Round(b.Reviews.Average(r => r.Rating), 2): 0
             })
-            .AsNoTracking();
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
-        return await query.ToListAsync(cancellationToken);
+    public async Task<IEnumerable<BookDto>> GetTop10ByAverageRatingAsync(CancellationToken cancellationToken = default)
+    {
+        FormattableString
+            sql = $@"
+            SELECT TOP(10) 
+                b.Id,
+                b.Title,
+                ISNULL(ROUND(AVG(CAST(r.Rating AS float)), 2), 0) AS AverageRating
+            FROM Books b
+            LEFT JOIN Reviews r ON r.BookId = b.Id
+            GROUP BY b.Id, b.Title
+            ORDER BY AverageRating DESC, b.Title ASC
+        ";
+
+        var topList = await dbContext.Database
+            .SqlQuery<TempTopBook>(sql)
+            .ToListAsync(cancellationToken);
+
+        if (topList.Count == 0)
+            return Array.Empty<BookDto>();
+
+        var ids = topList.Select(t => t.Id).ToList();
+
+        var books = await dbContext.Books
+            .Where(b => ids.Contains(b.Id))
+            .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+            .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var bookDict = books.ToDictionary(b => b.Id);
+
+        // Preserve ordering from the SQL topList
+        var result = topList.Select(t =>
+        {
+            var book = bookDict[t.Id];
+            return new BookDto
+            {
+                Id = t.Id,
+                Title = t.Title,
+                AverageRating = Math.Round(t.AverageRating, 2),
+                Authors = book.BookAuthors.Select(ba => ba.Author.Name),
+                Genres = book.BookGenres.Select(bg => bg.Genre.Name)
+            };
+        });
+
+        return result;
     }
 
     public async Task<int> Create(CreateBookDto createBookDto, CancellationToken cancellationToken = default)
@@ -100,5 +139,12 @@ public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepositor
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return null;
+    }
+
+    private sealed record TempTopBook
+    {
+        public int Id { get; init; }
+        public string Title { get; init; } = null!;
+        public double AverageRating { get; init; }
     }
 }

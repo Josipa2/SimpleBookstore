@@ -27,6 +27,21 @@ public class BookController(IBookService bookService) : ControllerBase
 
 
     /// <summary>
+    /// Retrieves 10 books with best.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <response code="200">Returns list of 10 books with best rating.</response>
+    [HttpGet("best")]
+    [ProducesResponseType(typeof(IEnumerable<BookDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<BookDto>>> GetTopRating(CancellationToken cancellationToken)
+    {
+        var result = await bookService.GetBooks(cancellationToken);
+
+        return Ok(result);
+    }
+
+
+    /// <summary>
     /// Retrieves book by id.
     /// </summary>
     /// <param name="id">Book id.</param>
