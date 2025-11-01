@@ -46,7 +46,7 @@ public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepositor
                 Title = b.Title,
                 Authors = b.BookAuthors.Select(ba => ba.Author.Name),
                 Genres = b.BookGenres.Select(bg => bg.Genre.Name),
-                AverageRating = b.Reviews.Any() ? Math.Round(b.Reviews.Average(r => r.Rating), 2 : 0
+                AverageRating = b.Reviews.Any() ? Math.Round(b.Reviews.Average(r => r.Rating), 2): 0
             })
             .AsNoTracking();
 

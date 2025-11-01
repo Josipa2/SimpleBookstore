@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SimpleBookstore.Domain.DTOs;
+﻿using SimpleBookstore.Domain.DTOs;
 using SimpleBookstore.Domain.Entities;
 using SimpleBookstore.Domain.Interfaces.Repositories;
 

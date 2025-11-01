@@ -15,8 +15,10 @@ public class SimpleBookstoreDbContext(DbContextOptions options) : DbContext(opti
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfiguration(new AuthorConfiguration());
         modelBuilder.ApplyConfiguration(new BookAuthorConfiguration());
         modelBuilder.ApplyConfiguration(new BookConfiguration());
         modelBuilder.ApplyConfiguration(new BookGenreConfiguration());
+        modelBuilder.ApplyConfiguration(new GenreConfiguration());
     }
 }

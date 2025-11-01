@@ -18,8 +18,12 @@ builder.Services.AddDbContext<SimpleBookstoreDbContext>(option =>
     option.UseNpgsql(builder.Configuration.GetConnectionString("SimpleBookstoreDbConnection")));
 
 builder.Services
+    .AddScoped<IAuthorRepository, AuthorRepository>()
+    .AddScoped<IAuthorService, AuthorService>()
     .AddScoped<IBookRepository, BookRepository>()
     .AddScoped<IBookService, BookService>()
+    .AddScoped<IGenreRepository, GenreRepository>()
+    .AddScoped<IGenreService, GenreService>()
     .AddScoped<IReviewRepository, ReviewRepository>()
     .AddScoped<IReviewService, ReviewService>();
 
