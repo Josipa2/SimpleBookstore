@@ -16,11 +16,18 @@ public class GenreController(IGenreService genreService) : ControllerBase
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="200">Returns list of genres.</response>
+    /// <response code="400">Failed to create the Genre.</response>
     [HttpGet()]
     [ProducesResponseType(typeof(IEnumerable<GenreDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<IEnumerable<GenreDto>>> GetAll(CancellationToken cancellationToken)
     {
         var result = await genreService.GetAll(cancellationToken);
+
+        if (result is null)
+        {
+            return BadRequest("Could not create genre.");
+        }
 
         return Ok(result);
     }

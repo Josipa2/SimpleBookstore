@@ -4,14 +4,9 @@ using SimpleBookstore.Domain.Interfaces.Services;
 
 namespace SimpleBookstore.Domain.Services;
 
+// This service as well as the other ones should contain business logic and validations, returning more detailed errors when needed.
 public class BookService(IBookRepository bookRepository) : IBookService
 {
-
-    public async Task<BookDto> GetBookById(int id, CancellationToken cancellationToken = default)
-    {
-        return await bookRepository.GetBookByIdAsync(id, cancellationToken);
-    }
-
     public async Task<IEnumerable<BookDto>> GetBooks(CancellationToken cancellationToken = default)
     {
         return await bookRepository.GetBooksAsync(cancellationToken);
@@ -27,12 +22,12 @@ public class BookService(IBookRepository bookRepository) : IBookService
         return await bookRepository.ImportNewBooks(books, cancellationToken);
     }
 
-    public async Task<int> Create(CreateBookDto createBookDto, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(CreateBookDto createBookDto, CancellationToken cancellationToken = default)
     {
         return await bookRepository.Create(createBookDto, cancellationToken);
     }
 
-    public async Task<int> Update(int id, decimal price, CancellationToken cancellationToken = default)
+    public async Task<int?> Update(int id, decimal price, CancellationToken cancellationToken = default)
     {
         return await bookRepository.Update(id, price);
     }

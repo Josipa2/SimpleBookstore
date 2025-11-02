@@ -5,27 +5,8 @@ using SimpleBookstore.Domain.Interfaces.Repositories;
 
 namespace SimpleBookstore.Domain.Repositories;
 
-public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepository
+public class BookRepository(SimpleBookstoreDbContext dbContext, ILogger<GenreRepository> logger) : IBookRepository
 {
-
-    public async Task<BookDto?> GetBookByIdAsync(int id, CancellationToken cancellationToken = default) =>
-        await dbContext
-            .Books
-            .Include(x => x.BookGenres).ThenInclude(x => x.Genre)
-            .Include(x => x.BookAuthors).ThenInclude(x => x.Author)
-            .Include(x => x.Reviews)
-            .Where(x => x.Id == id)
-            .Select(b => new BookDto
-            {
-                Id = b.Id,
-                Title = b.Title,
-                Authors = b.BookAuthors.Select(ba => ba.Author.Name),
-                Genres = b.BookGenres.Select(bg => bg.Genre.Name),
-                AverageRating = b.Reviews.Any() ? Math.Round(b.Reviews.Average(r => r.Rating), 2) : 0
-            })
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken);
-
     public async Task<IEnumerable<BookDto>> GetBooksAsync(CancellationToken cancellationToken = default) => 
             await dbContext
             .Books
@@ -92,7 +73,7 @@ public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepositor
         return result;
     }
 
-    public async Task<int> Create(CreateBookDto createBookDto, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(CreateBookDto createBookDto, CancellationToken cancellationToken = default)
     {
         var book = new Book
         {
@@ -106,26 +87,48 @@ public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepositor
                 .ToList()
         };
 
+        try
+        {
+            await dbContext.Books.AddAsync(book, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
 
-        await dbContext.Books.AddAsync(book, cancellationToken);
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        return book.Id;
+            logger.LogInformation($"Created new Book entity with id {book.Id} at {DateTime.UtcNow.ToLongTimeString()}.");
+            return book.Id;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Exception creating new Book entity at {DateTime.UtcNow.ToLongTimeString()}.");
+            return null;
+        }
     }
 
-    public async Task<int> Update(int id, decimal price, CancellationToken cancellationToken = default)
+    public async Task<int?> Update(int id, decimal price, CancellationToken cancellationToken = default)
     {
         var book = await dbContext
             .Books
             .Where(x => x.Id == id)
             .FirstOrDefaultAsync(cancellationToken);
 
+        if (book is null) 
+        {
+            logger.LogError($"Book entity with id {id} was not found at {DateTime.UtcNow.ToLongTimeString()}.");
+            return null;
+        }
+
         book.Price = price;
 
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
 
-        return book.Id;
+            logger.LogInformation($"Updated Book entity with id {book.Id} at {DateTime.UtcNow.ToLongTimeString()}.");
+            return book.Id;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Exception updating Book entity at {DateTime.UtcNow.ToLongTimeString()}.");
+            return null;
+        }
     }
 
     public async Task<int?> Delete(int id, CancellationToken cancellationToken = default)
@@ -135,10 +138,26 @@ public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepositor
             .Where(x => x.Id == id)
             .FirstOrDefaultAsync(cancellationToken);
 
-        dbContext.Remove(book!);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        if (book is null)
+        {
+            logger.LogError($"Book entity with id {id} was not found at {DateTime.UtcNow.ToLongTimeString()}.");
+            return id;
+        }
 
-        return null;
+        dbContext.Remove(book);
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            logger.LogInformation($"Deleted Book entity with id {book.Id} at {DateTime.UtcNow.ToLongTimeString()}.");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Exception deleting Book entity at {DateTime.UtcNow.ToLongTimeString()}.");
+            return id;
+        }
     }
 
     public Task<int> ImportNewBooks(IEnumerable<BookImportDto> books, CancellationToken cancellationToken = default)

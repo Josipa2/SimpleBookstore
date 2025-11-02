@@ -5,9 +5,9 @@ using SimpleBookstore.Domain.Interfaces.Repositories;
 
 namespace SimpleBookstore.Domain.Repositories;
 
-public class AuthorRepository(SimpleBookstoreDbContext dbContext) : IAuthorRepository
+public class AuthorRepository(SimpleBookstoreDbContext dbContext, ILogger<AuthorRepository> logger) : IAuthorRepository
 {
-    public async Task<int> Create(string authorName, int? yearOfBirth, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(string authorName, int? yearOfBirth, CancellationToken cancellationToken = default)
     {
         var author = new Author
         {
@@ -15,16 +15,23 @@ public class AuthorRepository(SimpleBookstoreDbContext dbContext) : IAuthorRepos
             YearOfBirth = yearOfBirth,
         };
 
+        try
+        {
+            await dbContext.Authors.AddAsync(author, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
 
-        await dbContext.Authors.AddAsync(author, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        return author.Id;
+            logger.LogInformation($"Created new Author entity with id {author.Id} at {DateTime.UtcNow.ToLongTimeString()}.");
+            return author.Id;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Exception creating new Author entity at {DateTime.UtcNow.ToLongTimeString()}.");
+            return null;
+        }
     }
 
-    public async Task<IEnumerable<AuthorDto>> GetAll(CancellationToken cancellationToken = default)
-    {
-        var query = dbContext
+    public async Task<IEnumerable<AuthorDto>> GetAll(CancellationToken cancellationToken = default) =>
+        await dbContext
             .Authors
             .Select(g => new AuthorDto
             {
@@ -32,8 +39,7 @@ public class AuthorRepository(SimpleBookstoreDbContext dbContext) : IAuthorRepos
                 Name = g.Name,
                 YearOfBirth = g.YearOfBirth,
             })
-            .AsNoTracking();
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 
-        return await query.ToListAsync(cancellationToken);
-    }
 }

@@ -4,5 +4,5 @@ namespace SimpleBookstore.Domain.Interfaces.Services;
 
 public interface IReviewService
 {
-    Task<int> Create(CreateReviewDto createReviewDto, CancellationToken cancellationToken = default);
+    Task<int?> Create(CreateReviewDto createReviewDto, CancellationToken cancellationToken = default);
 }

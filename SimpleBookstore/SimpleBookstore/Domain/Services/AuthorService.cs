@@ -7,7 +7,7 @@ namespace SimpleBookstore.Domain.Services;
 public class AuthorService(IAuthorRepository authorRepository) : IAuthorService
 {
 
-    public async Task<int> Create(string authorName, int? yearOfBirth, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(string authorName, int? yearOfBirth, CancellationToken cancellationToken = default)
     {
         return await authorRepository.Create(authorName, yearOfBirth, cancellationToken);
     }

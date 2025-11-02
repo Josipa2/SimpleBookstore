@@ -4,9 +4,9 @@ using SimpleBookstore.Domain.Interfaces.Repositories;
 
 namespace SimpleBookstore.Domain.Repositories;
 
-public class ReviewRepository(SimpleBookstoreDbContext dbContext) : IReviewRepository
+public class ReviewRepository(SimpleBookstoreDbContext dbContext, ILogger<ReviewRepository> logger) : IReviewRepository
 {
-    public async Task<int> Create(CreateReviewDto createReviewDto, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(CreateReviewDto createReviewDto, CancellationToken cancellationToken = default)
     {
         var review = new Review
         {
@@ -15,11 +15,18 @@ public class ReviewRepository(SimpleBookstoreDbContext dbContext) : IReviewRepos
             Description = createReviewDto.Description,
         };
 
+        try
+        {
+            await dbContext.Reviews.AddAsync(review, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
 
-        await dbContext.Reviews.AddAsync(review, cancellationToken);
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        return review.Id;
+            logger.LogInformation($"Created new Review entity with id {review.Id} at {DateTime.UtcNow.ToLongTimeString()}.");
+            return review.Id;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Exception creating new Review entity at {DateTime.UtcNow.ToLongTimeString()}.");
+            return null;
+        }
     }
 }

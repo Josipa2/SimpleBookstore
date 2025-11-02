@@ -5,33 +5,38 @@ using SimpleBookstore.Domain.Interfaces.Repositories;
 
 namespace SimpleBookstore.Domain.Repositories;
 
-public class GenreRepository(SimpleBookstoreDbContext dbContext) : IGenreRepository
+public class GenreRepository(SimpleBookstoreDbContext dbContext, ILogger<GenreRepository> logger) : IGenreRepository
 {
-    public async Task<int> Create(string genreName, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(string genreName, CancellationToken cancellationToken = default)
     {
         var genre = new Genre
         {
             Name = genreName,
         };
 
+        try
+        {
+            await dbContext.Genres.AddAsync(genre, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
 
-        await dbContext.Genres.AddAsync(genre, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        return genre.Id;
+            logger.LogInformation($"Created new Genre entity with id {genre.Id} at {DateTime.UtcNow.ToLongTimeString()}.");
+            return genre.Id;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Exception creating new Genre entity at {DateTime.UtcNow.ToLongTimeString()}.");
+            return null;
+        }
     }
 
-    public async Task<IEnumerable<GenreDto>> GetAll(CancellationToken cancellationToken = default)
-    {
-        var query = dbContext
+    public async Task<IEnumerable<GenreDto>> GetAll(CancellationToken cancellationToken = default) =>
+        await dbContext
             .Genres
             .Select(g => new GenreDto
             {
                 Id = g.Id,
                 Name = g.Name,
             })
-            .AsNoTracking();
-
-        return await query.ToListAsync(cancellationToken);
-    }
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
 }

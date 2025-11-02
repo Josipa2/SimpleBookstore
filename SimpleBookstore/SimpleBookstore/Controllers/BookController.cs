@@ -25,7 +25,6 @@ public class BookController(IBookService bookService) : ControllerBase
         return Ok(result);
     }
 
-
     /// <summary>
     /// Retrieves 10 books with best.
     /// </summary>
@@ -40,33 +39,24 @@ public class BookController(IBookService bookService) : ControllerBase
         return Ok(result);
     }
 
-
-    /// <summary>
-    /// Retrieves book by id.
-    /// </summary>
-    /// <param name="id">Book id.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <response code="200">Returns data for book with specified Id.</response>
-    [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
-    public async Task<ActionResult<BookDto>> GetById(int id, CancellationToken cancellationToken)
-    {
-        var result = await bookService.GetBookById(id, cancellationToken);
-
-        return Ok(result);
-    }
-
     /// <summary>
     /// Creates new Book
     /// </summary>
     /// <param name="createBookDto">New book data</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">Returns list of books.</response>
+    /// <response code="400">Failed to create the Book.</response>
     [HttpPost]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> Create([FromBody] CreateBookDto createBookDto, CancellationToken cancellationToken)
     {
         var result = await bookService.Create(createBookDto, cancellationToken);
+
+        if (result is null)
+        {
+            return BadRequest("Could not create book.");
+        }
 
         return Ok(result);
     }
@@ -78,11 +68,18 @@ public class BookController(IBookService bookService) : ControllerBase
     /// <param name="price">New book price</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">Returns list of books.</response>
+    /// <response code="400">Failed to update the book price.</response>
     [HttpPut]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(int), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> Update(int id, decimal price, CancellationToken cancellationToken)
     {
         var result = await bookService.Update(id, price, cancellationToken);
+
+        if (result is null)
+        {
+            return BadRequest("Could not update book price.");
+        }
 
         return Ok(result);
     }
@@ -93,12 +90,19 @@ public class BookController(IBookService bookService) : ControllerBase
     /// <param name="id">Book Id</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">Returns oks.</response>
+    /// <response code="400">Failed to delete the book.</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var result = await bookService.Delete(id, cancellationToken);
 
-        return Ok();
+        if (result is not null)
+        {
+            return BadRequest("Could not delete the book.");
+        }
+
+        return Ok(result);
     }
 }
