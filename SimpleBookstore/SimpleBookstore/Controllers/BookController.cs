@@ -34,7 +34,7 @@ public class BookController(IBookService bookService) : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<BookDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<BookDto>>> GetTopRating(CancellationToken cancellationToken)
     {
-        var result = await bookService.GetBooks(cancellationToken);
+        var result = await bookService.GetTop10ByAverageRatingAsync(cancellationToken);
 
         return Ok(result);
     }

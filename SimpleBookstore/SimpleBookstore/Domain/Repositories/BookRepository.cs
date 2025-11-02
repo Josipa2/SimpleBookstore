@@ -26,51 +26,48 @@ public class BookRepository(SimpleBookstoreDbContext dbContext, ILogger<GenreRep
 
     public async Task<IEnumerable<BookDto>> GetTop10ByAverageRatingAsync(CancellationToken cancellationToken = default)
     {
-        FormattableString
-            sql = $@"
-            SELECT TOP(10) 
-                b.Id,
-                b.Title,
-                ISNULL(ROUND(AVG(CAST(r.Rating AS float)), 2), 0) AS AverageRating
-            FROM Books b
-            LEFT JOIN Reviews r ON r.BookId = b.Id
-            GROUP BY b.Id, b.Title
-            ORDER BY AverageRating DESC, b.Title ASC
+        FormattableString sql = $@"
+            SELECT
+                b.""Id""
+            FROM ""Books"" b
+            LEFT JOIN ""Reviews"" r ON r.""BookId"" = b.""Id""
+            GROUP BY b.""Id"", b.""Title""
+            ORDER BY COALESCE(AVG(r.""Rating""), 0) DESC, b.""Title"" ASC
+            LIMIT 10
         ";
 
         var topList = await dbContext.Database
             .SqlQuery<TempTopBook>(sql)
             .ToListAsync(cancellationToken);
 
-        if (topList.Count == 0)
+        if (topList.Count == 0) 
+        {
             return Array.Empty<BookDto>();
+        }
 
         var ids = topList.Select(t => t.Id).ToList();
 
-        var books = await dbContext.Books
+        var booksEntities = await dbContext.Books
             .Where(b => ids.Contains(b.Id))
             .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
             .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+            .Include(b => b.Reviews)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        var bookDict = books.ToDictionary(b => b.Id);
+        var books = booksEntities
+            .Select(b => new BookDto {
+                Id = b.Id,
+                Title = b.Title,
+                Authors = b.BookAuthors.Select(ba => ba.Author.Name),
+                Genres = b.BookGenres.Select(bg => bg.Genre.Name),
+                AverageRating = b.Reviews.Any() ? Math.Round(b.Reviews.Average(r => r.Rating), 2) : 0
+            })
+            .OrderByDescending(b => b.AverageRating)
+            .ThenBy(b => b.Title)
+            .ToList();
 
-        // Preserve ordering from the SQL topList
-        var result = topList.Select(t =>
-        {
-            var book = bookDict[t.Id];
-            return new BookDto
-            {
-                Id = t.Id,
-                Title = t.Title,
-                AverageRating = Math.Round(t.AverageRating, 2),
-                Authors = book.BookAuthors.Select(ba => ba.Author.Name),
-                Genres = book.BookGenres.Select(bg => bg.Genre.Name)
-            };
-        });
-
-        return result;
+        return books;
     }
 
     public async Task<int?> Create(CreateBookDto createBookDto, CancellationToken cancellationToken = default)
@@ -168,7 +165,5 @@ public class BookRepository(SimpleBookstoreDbContext dbContext, ILogger<GenreRep
     private sealed record TempTopBook
     {
         public int Id { get; init; }
-        public string Title { get; init; } = null!;
-        public double AverageRating { get; init; }
     }
 }
