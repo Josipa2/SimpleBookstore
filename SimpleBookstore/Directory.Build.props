@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <!-- force a recognized tooling suffix so the Worker SDK targets don't error for net9 -->
+    <FunctionsToolingSuffix>net8-isolated</FunctionsToolingSuffix>
+    <_ToolingSuffix>net8-isolated</_ToolingSuffix>
+  </PropertyGroup>
+</Project>

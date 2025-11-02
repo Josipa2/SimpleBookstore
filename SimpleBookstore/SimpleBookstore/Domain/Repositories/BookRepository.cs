@@ -141,6 +141,11 @@ public class BookRepository(SimpleBookstoreDbContext dbContext) : IBookRepositor
         return null;
     }
 
+    public Task<int> ImportNewBooks(IEnumerable<BookImportDto> books, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     private sealed record TempTopBook
     {
         public int Id { get; init; }

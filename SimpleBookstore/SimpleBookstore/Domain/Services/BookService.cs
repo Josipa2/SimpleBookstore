@@ -22,6 +22,11 @@ public class BookService(IBookRepository bookRepository) : IBookService
         return await bookRepository.GetTop10ByAverageRatingAsync(cancellationToken);
     }
 
+    public async Task<int> ImportNewBooks(IEnumerable<BookImportDto> books, CancellationToken cancellationToken = default)
+    {
+        return await bookRepository.ImportNewBooks(books, cancellationToken);
+    }
+
     public async Task<int> Create(CreateBookDto createBookDto, CancellationToken cancellationToken = default)
     {
         return await bookRepository.Create(createBookDto, cancellationToken);
