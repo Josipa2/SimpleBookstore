@@ -7,7 +7,7 @@ namespace SimpleBookstore.Domain.Repositories;
 
 public class AuthorRepository(SimpleBookstoreDbContext dbContext, ILogger<AuthorRepository> logger) : IAuthorRepository
 {
-    public async Task<int?> Create(string authorName, int? yearOfBirth, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(string authorName, int? yearOfBirth, CancellationToken cancellationToken)
     {
         var author = new Author
         {
@@ -30,7 +30,7 @@ public class AuthorRepository(SimpleBookstoreDbContext dbContext, ILogger<Author
         }
     }
 
-    public async Task<IEnumerable<AuthorDto>> GetAll(CancellationToken cancellationToken = default) =>
+    public async Task<IEnumerable<AuthorDto>> GetAll(CancellationToken cancellationToken) =>
         await dbContext
             .Authors
             .Select(g => new AuthorDto

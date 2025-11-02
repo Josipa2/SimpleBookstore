@@ -7,7 +7,7 @@ namespace SimpleBookstore.Domain.Repositories;
 
 public class GenreRepository(SimpleBookstoreDbContext dbContext, ILogger<GenreRepository> logger) : IGenreRepository
 {
-    public async Task<int?> Create(string genreName, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(string genreName, CancellationToken cancellationToken)
     {
         var genre = new Genre
         {
@@ -29,7 +29,7 @@ public class GenreRepository(SimpleBookstoreDbContext dbContext, ILogger<GenreRe
         }
     }
 
-    public async Task<IEnumerable<GenreDto>> GetAll(CancellationToken cancellationToken = default) =>
+    public async Task<IEnumerable<GenreDto>> GetAll(CancellationToken cancellationToken) =>
         await dbContext
             .Genres
             .Select(g => new GenreDto

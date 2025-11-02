@@ -17,14 +17,14 @@ public class BookRetrieverFunction
 
     [Function("BookRetrieverFunction")]
     // Real life scenario would have TimerTrigger("0 0 * * * *") for each hour of each day
-    public async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, FunctionContext context)
+    public async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, FunctionContext context, CancellationToken cancellationToken)
     {
         _logger.LogInformation($"Book retriever function started at: {DateTime.Now}");
 
         // Real life scenario would retrieve books from external API
         var books = BookFaker.GetBooks();
 
-        var result = await _bookService.ImportNewBooks(books);
+        var result = await _bookService.ImportNewBooks(books, cancellationToken);
 
         _logger.LogInformation($"Book retriever function ended at: {DateTime.Now}");
         _logger.LogInformation($"Successfully imported {result} books", result);

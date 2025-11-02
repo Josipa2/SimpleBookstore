@@ -14,13 +14,15 @@ public class BookController(IBookService bookService) : ControllerBase
     /// <summary>
     /// Retrieves all books.
     /// </summary>
+    /// <param name="numOfItems">Number of items per page.</param>
+    /// <param name="page">CPage number.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="200">Returns list of books.</response>
     [HttpGet()]
     [ProducesResponseType(typeof(IEnumerable<BookDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<BookDto>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<BookDto>>> GetAll(int numOfItems, int page, CancellationToken cancellationToken)
     {
-        var result = await bookService.GetBooks(cancellationToken);
+        var result = await bookService.GetBooks(numOfItems, page, cancellationToken);
 
         return Ok(result);
     }

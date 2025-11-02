@@ -6,7 +6,7 @@ namespace SimpleBookstore.Domain.Repositories;
 
 public class ReviewRepository(SimpleBookstoreDbContext dbContext, ILogger<ReviewRepository> logger) : IReviewRepository
 {
-    public async Task<int?> Create(CreateReviewDto createReviewDto, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(CreateReviewDto createReviewDto, CancellationToken cancellationToken)
     {
         var review = new Review
         {

@@ -6,12 +6,12 @@ namespace SimpleBookstore.Domain.Services;
 
 public class GenreService(IGenreRepository genreRepository) : IGenreService
 {
-    public async Task<int?> Create(string genreName, CancellationToken cancellationToken = default)
+    public async Task<int?> Create(string genreName, CancellationToken cancellationToken)
     {
         return await genreRepository.Create(genreName, cancellationToken);
     }
 
-    public async Task<IEnumerable<GenreDto>> GetAll(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<GenreDto>> GetAll(CancellationToken cancellationToken)
     {
         return await genreRepository.GetAll(cancellationToken);
     }
