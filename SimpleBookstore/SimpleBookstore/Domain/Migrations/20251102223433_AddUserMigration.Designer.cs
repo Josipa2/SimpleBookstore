@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SimpleBookstore.Domain;
@@ -11,9 +12,11 @@ using SimpleBookstore.Domain;
 namespace SimpleBookstore.Domain.Migrations
 {
     [DbContext(typeof(SimpleBookstoreDbContext))]
-    partial class SimpleBookstoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251102223433_AddUserMigration")]
+    partial class AddUserMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

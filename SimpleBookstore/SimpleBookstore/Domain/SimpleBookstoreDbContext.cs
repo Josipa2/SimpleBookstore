@@ -12,6 +12,7 @@ public class SimpleBookstoreDbContext(DbContextOptions options) : DbContext(opti
     public DbSet<BookGenre> BookGenres { get; init; }
     public DbSet<Genre> Genres { get; init; }
     public DbSet<Review> Reviews { get; init; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

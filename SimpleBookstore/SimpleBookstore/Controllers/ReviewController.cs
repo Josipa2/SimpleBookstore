@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SimpleBookstore.Domain.DTOs;
 using SimpleBookstore.Domain.Interfaces.Services;
 
@@ -19,6 +20,7 @@ public class ReviewController(IReviewService reviewService) : ControllerBase
     /// <response code="200">Returns id of new review.</response>
     /// <response code="400">Failed to create the Review.</response>
     [HttpPost]
+    [Authorize(Roles = "ReadWrite")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(int), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> Create([FromBody] CreateReviewDto createReviewDto, CancellationToken cancellationToken)

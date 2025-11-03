@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SimpleBookstore.Domain.DTOs;
 using SimpleBookstore.Domain.Interfaces.Services;
 
@@ -19,6 +20,7 @@ public class BookController(IBookService bookService) : ControllerBase
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="200">Returns list of books.</response>
     [HttpGet()]
+    [Authorize(Roles = "Read,ReadWrite")]
     [ProducesResponseType(typeof(IEnumerable<BookDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<BookDto>>> GetAll(int numOfItems, int page, CancellationToken cancellationToken)
     {
@@ -32,7 +34,8 @@ public class BookController(IBookService bookService) : ControllerBase
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <response code="200">Returns list of 10 books with best rating.</response>
-    [HttpGet("best")]
+    [HttpGet("best-books")]
+    [Authorize(Roles = "Read,ReadWrite")]
     [ProducesResponseType(typeof(IEnumerable<BookDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<BookDto>>> GetTopRating(CancellationToken cancellationToken)
     {
@@ -49,6 +52,7 @@ public class BookController(IBookService bookService) : ControllerBase
     /// <response code="200">Returns list of books.</response>
     /// <response code="400">Failed to create the Book.</response>
     [HttpPost]
+    [Authorize(Roles = "ReadWrite")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(int), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> Create([FromBody] CreateBookDto createBookDto, CancellationToken cancellationToken)
@@ -72,6 +76,7 @@ public class BookController(IBookService bookService) : ControllerBase
     /// <response code="200">Returns list of books.</response>
     /// <response code="400">Failed to update the book price.</response>
     [HttpPut]
+    [Authorize(Roles = "ReadWrite")]
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(int), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<int>> Update(int id, decimal price, CancellationToken cancellationToken)
@@ -94,6 +99,7 @@ public class BookController(IBookService bookService) : ControllerBase
     /// <response code="200">Returns oks.</response>
     /// <response code="400">Failed to delete the book.</response>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "ReadWrite")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> Delete(int id, CancellationToken cancellationToken)
